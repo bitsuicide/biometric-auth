@@ -5,7 +5,6 @@ class MainWindow(QtGui.QMainWindow):
     
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        #self.resize(700, 700)
         self.setWindowTitle("Add new user")
         cWidget = QtGui.QWidget(self)        
         mainLayout = QtGui.QVBoxLayout()
@@ -25,7 +24,7 @@ class MainWindow(QtGui.QMainWindow):
         # Button  
         buttonLayout = QtGui.QHBoxLayout()
         startButton = QtGui.QPushButton("Start")
-        self.connect(startButton, QtCore.SIGNAL("clicked()"), self.faceWindow)
+        self.connect(startButton, QtCore.SIGNAL("clicked()"), self.newWindow)
         cancelButton = QtGui.QPushButton("Cancel")
         self.connect(cancelButton, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))
         buttonLayout.addWidget(startButton)
@@ -38,10 +37,9 @@ class MainWindow(QtGui.QMainWindow):
         cWidget.setLayout(mainLayout)
         self.setCentralWidget(cWidget)
 
-    def faceWindow(self):
-        print "Start process. Username: " + self.userEdit.text()
-        self.faceWindow = cw.CaptureWindow()
+    def newWindow(self):
+        user = str(self.userEdit.text())
+        print "Start process. Username: " + user
+        self.faceWindow = cw.CaptureWindow(user, cw.CaptureWindow.FACE_TYPE, "New User - Face", "Take a picture of you", None)
         self.close()
         self.faceWindow.show()
-
-    #def gestureWindows(self):
