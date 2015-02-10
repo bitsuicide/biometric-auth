@@ -44,4 +44,4 @@ class VideoSampling():
             if not os.path.isdir(self.gestureDir): 
                 os.mkdir(self.gestureDir)
             imgPath = self.gestureDir + "/" + imgType + "_" + userId
-        cv2.imwrite(imgPath + "." + self.config.get("Cam", "imgExtension"), cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2BGR))
+        cv2.imwrite(imgPath + "." + self.config.get("Cam", "imgExtension"), cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
