@@ -6,12 +6,25 @@ import sys
 import ConfigParser
 
 class Recognition():
+    EIGEN_MODEL = "eigen"
+    FISHER_MODEL = "fisher"
+    LBPH_MODEL = "lbph"
 
     def __init__(self):
         """ Create a FaceRecognizer and train it on the given images """
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
-        self.model = cv2.createEigenFaceRecognizer()
+        modelType = self.config.get("Alg Parameters", "recognitionModel")
+        if modelType == self.EIGEN_MODEL:
+            self.model = cv2.createEigenFaceRecognizer()
+        elif modelType == self.FISHER_MODEL:
+            self.model = cv2.createFisherFaceRecognizer()
+        elif modelType == self.LBPH_MODEL:
+            self.model = cv2.createLBPHFaceRecognizer()
+
+        print "Inizializing face recognizer model: " + modelType + "..."
+
+        self.model = cv2.createLBPHFaceRecognizer()
         self.model, self.nameList = self.trainModel(self.model)
 
     def checkFrame(self, frame):
@@ -66,7 +79,7 @@ class Recognition():
 
     def trainModel(self, model):
         """ Train model with faces """
-        imgList, labelList, nameList = self.readImages("pradeep_collection/")
+        imgList, labelList, nameList = self.readImages("face/")
         model.train(np.asarray(imgList), np.asarray(labelList))
         print("Training Finished")
         return model, nameList

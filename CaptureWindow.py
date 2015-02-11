@@ -61,12 +61,34 @@ class CaptureWindow(QtGui.QMainWindow):
     def savePicture(self):
         print "Save picture - " + self.captureType
         self.timer.stop()
-        self.webcamSampling.saveFrame(self.userId, self.captureType)
+        detection, newUser = self.webcamSampling.saveFrame(self.userId, self.captureType)
         if self.captureType == self.FACE_TYPE:
-            self.gestureWindow = CaptureWindow(self.userId, self.GESTURE_TYPE, "New User - Gesture", "Take a picture of your gesture", self.webcamSampling)
-            time.sleep(self.WAIT_TIME)
-            self.close()
-            self.gestureWindow.show()
+            if detection:
+                if not newUser:
+                    msgBox = QtGui.QMessageBox()
+                    msgBox.setText("User allready exist and your image is used for improve recognition system.");
+                    msgBox.setInformativeText("Do you want to recapture your gesture? Gesture is always overwritten.");
+                    msgBox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Close);
+                    msgBox.setDefaultButton(QtGui.QMessageBox.Close);
+                    ret = msgBox.exec_();
+                if newUser or ret == QtGui.QMessageBox.Ok:
+                    self.gestureWindow = CaptureWindow(self.userId, self.GESTURE_TYPE, "New User - Gesture", "Take a picture of your gesture", self.webcamSampling)
+                    time.sleep(self.WAIT_TIME)
+                    self.close()
+                    self.gestureWindow.show()
+                else:
+                    self.close()
+            else:
+                print "Procedure aborted."
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("There is a problem with your photo!");
+                msgBox.setInformativeText("Try to choose a different position of your face.");
+                msgBox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Close);
+                msgBox.setDefaultButton(QtGui.QMessageBox.Close);
+                if msgBox.exec_() == QtGui.QMessageBox.Ok:
+                    self.timer.start(27)
+                else:
+                    self.close()
         elif self.captureType == self.GESTURE_TYPE:
             print "Procedure completed."
             time.sleep(self.WAIT_TIME)
