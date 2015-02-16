@@ -40,6 +40,6 @@ class MainWindow(QtGui.QMainWindow):
     def newWindow(self):
         user = str(self.userEdit.text())
         print "Start process. Username: " + user
-        self.faceWindow = cw.CaptureWindow(user, cw.CaptureWindow.FACE_TYPE, "New User - Face", "Take a picture of you", None)
+        self.faceWindow = cw.CaptureWindow(user, "New User - Face", "Take a picture of you", None)
         self.close()
         self.faceWindow.show()

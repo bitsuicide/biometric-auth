@@ -3,32 +3,23 @@ import os
 
 class ReadWriteIndex():
     FILE_SEPARATOR = ";"
-    FACE_TYPE = "face"
-    GESTURE_TYPE = "gesture"
     
-    def __init__(self, configType):
+    def __init__(self):
         """ Read index file """
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
-        if configType == self.FACE_TYPE:
-            directory = "faceDir"
-        elif configType == self.GESTURE_TYPE:
-            directory = "gestureDir"
-
-        pathDir = os.getcwd() + self.config.get("Paths", directory)
+        pathDir = os.getcwd() + self.config.get("Paths", "faceDir")
         if not os.path.isdir(pathDir):  
             os.mkdir(pathDir) 
 
         indexPath = pathDir + "/" + self.config.get("Alg Parameters", "indexFile")
-        self.configIndex = open(indexPath, "r")
+        self.configIndex = open(indexPath, "r+")
         self.countElem = 0
         self.userImg = {} 
-        print "Read file index of " + configType
+        print "Read file index of face"
         for line in self.configIndex:
             data = line.split(self.FILE_SEPARATOR) # img - user 
             self.addUserAndPath(data[1].strip(), data[0])
-        self.configIndex.close()
-        self.configIndex = open(indexPath, "a")
 
     def __del__(self):
         """ Close index file """
@@ -49,7 +40,6 @@ class ReadWriteIndex():
             tempList.append(path)
             self.userImg[user] = tempList
         self.countElem += 1
-        print self.userImg
 
     def checkUser(self, user):
         """ Check if exist an user """

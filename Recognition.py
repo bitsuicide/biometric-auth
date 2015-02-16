@@ -9,6 +9,7 @@ class Recognition():
     EIGEN_MODEL = "eigen"
     FISHER_MODEL = "fisher"
     LBPH_MODEL = "lbph"
+    MAX_MATCH_ELEM = 50
 
     def __init__(self):
         """ Create a FaceRecognizer and train it on the given images """
@@ -26,6 +27,11 @@ class Recognition():
 
         self.model = cv2.createLBPHFaceRecognizer()
         self.model, self.nameList = self.trainModel(self.model)
+        self._matchList = {} # list of captured subjects or unknowns
+        self._maxMatchList = ["unknown", 0]
+        self._countMatchElem = 0
+        self._bestUsersMatch = []
+        self.frameFaceCounter = 0
 
     def checkFrame(self, frame):
         """ Check face in current frame """
@@ -36,19 +42,23 @@ class Recognition():
         # Detect face in frame
         faceImg, detection, x, y, h, w = self.detectFace(copyFrame)
         if detection:
+            self.frameFaceCounter += 1
             # Crop Image
             faceImg = cv2.resize(faceImg, (92 ,112))
             # Prediction
             [pLabel, pConfidence] = self.model.predict(np.asarray(faceImg))
             threshhold = int(self.config.get("Alg Parameters", "threshhold"))
-            if pConfidence < threshhold:
+            if pConfidence < threshhold: # user known
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-                cv2.putText(frame, self.nameList[pLabel].rstrip("\n"), (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
-                print "Known"
+                label = self.nameList[pLabel].rstrip("\n")
+                cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
+                self._addUserToMatchList(label)
+                #print "Known"
                 return frame
-            else:
+            else: # user unknown
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                print "Unknown"
+                self._addUserToMatchList("unknown")
+                #print "Unknown"
                 return frame
         else:
             return frame
@@ -116,3 +126,28 @@ class Recognition():
             return [faceImg, 1, x1, y1, h1, w1]
         else:
             return [0, 0, 0, 0, 0, 0]
+
+    def getBestUser(self):
+        """ Return best user matching """
+        lenList = len(self._bestUsersMatch)
+        if lenList == 0:
+            return []
+        else: 
+            return self._bestUsersMatch[lenList - 1]
+
+    def _addUserToMatchList(self, label):
+        if self._countMatchElem == self.MAX_MATCH_ELEM:
+            self._bestUsersMatch.append(self._maxMatchList[0])
+            self._matchList = {}
+            self._maxMatchList = ["unknown", 0]
+            self._countMatchElem = 0
+        else: 
+            if not label in self._matchList:
+                self._matchList[label] = 1
+            else:
+                occorrenza = self._matchList[label] + 1
+                self._matchList[label] = occorrenza
+                if self._maxMatchList[1] < occorrenza:
+                    self._maxMatchList = [label, occorrenza]
+                    print self._maxMatchList
+            self._countMatchElem += 1

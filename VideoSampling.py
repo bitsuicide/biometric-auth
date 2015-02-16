@@ -20,7 +20,6 @@ class VideoSampling():
         self.capture.set(4, float(self.config.get("Cam", "weigth")))
         self.currentDir = os.getcwd()
         self.faceDir = self.config.get("Paths", "faceDir")
-        self.gestureDir = self.config.get("Paths", "gestureDir")
  
     def captureNextFrame(self):
         """ capture frame and reverse RBG BGR and return opencv image """
@@ -35,22 +34,19 @@ class VideoSampling():
         pixmap = QtGui.QPixmap.fromImage(image)   
         return pixmap
 
-    def saveFrame(self, userId, imgType):
+    def saveFrame(self, userId):
         """ write frame to disk and add row to file config
         Return: 
         detection - face is detected
         newUser - created new user
         """
         imgBasePath = ""
-        if imgType == cw.CaptureWindow.FACE_TYPE:
-            imgBasePath = self.faceDir + "/" + imgType + "_" + userId
-        elif imgType == cw.CaptureWindow.GESTURE_TYPE:
-            imgBasePath = self.gestureDir + "/" + imgType + "_" + userId
+        imgBasePath = self.faceDir + "/" + "face_" + userId
         recognition = rec.Recognition()
         faceImg, detection, x, y, h, w = recognition.detectFace(cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
 
         if detection:
-            writer = rwi.ReadWriteIndex(imgType)    
+            writer = rwi.ReadWriteIndex()    
             faceImg = cv2.resize(faceImg, (92 ,112))
             fileExtension = "." + self.config.get("Cam", "imgExtension")
             filePath = imgBasePath + "#" + str(writer.getCountUserElem(userId)) + fileExtension

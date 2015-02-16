@@ -47,4 +47,6 @@ class RecognitionWindow(QtGui.QMainWindow):
         self.webcamSampling.captureNextFrame()
         # Recognition System
         self.webcamSampling.currentFrame = self.recognition.checkFrame(self.webcamSampling.currentFrame) 
+        print "Frame Counter: " + str(self.recognition.frameFaceCounter)
+        print "Best user: " + str(self.recognition.getBestUser())
         self.imgLabel.setPixmap(self.webcamSampling.convertFrame())
