@@ -12,10 +12,11 @@ class Recognition():
 
     def __init__(self, recognition):
         """ Create a FaceRecognizer and train it on the given images """
+        self._recognition = recognition
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
 
-        if recognition:
+        if self._recognition:
             modelType = self.config.get("Alg Parameters", "recognitionModel")
             if modelType == self.EIGEN_MODEL:
                 self.model = cv2.createEigenFaceRecognizer()
@@ -42,7 +43,7 @@ class Recognition():
         copyFrame = cv2.cvtColor(copyFrame, cv2.COLOR_BGR2GRAY)
         # Detect face in frame
         faceImg, detection, x, y, h, w = self.detectFace(copyFrame)
-        if detection and recognition:
+        if detection and self._recognition:
             self.frameFaceCounter += 1
             # Crop Image
             faceImg = cv2.resize(faceImg, (92 ,112))
