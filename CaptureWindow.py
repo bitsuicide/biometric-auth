@@ -67,7 +67,7 @@ class CaptureWindow(QtGui.QMainWindow):
                 msgBox.setDefaultButton(QtGui.QMessageBox.Close);
                 ret = msgBox.exec_();
             if newUser or ret == QtGui.QMessageBox.Ok:
-                self.recWindow = rw.RecWindow(self.userId, "New User - Voice", "Push start button and read famous sentence.", False)
+                self.recWindow = rw.RecWindow(self.userId, "New User - Voice", "Push recording button and read famous sentence.", False)
                 time.sleep(self.WAIT_TIME)
                 self.close()
                 self.recWindow.show()

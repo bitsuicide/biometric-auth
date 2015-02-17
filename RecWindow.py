@@ -2,6 +2,7 @@ import AudioAnalyzer as aa
 import Recorder as rc
 import SentenceGenerator as sg
 import time
+import os
 from PyQt4 import QtGui, QtCore
 
 class RecWindow(QtGui.QMainWindow):
@@ -60,10 +61,19 @@ class RecWindow(QtGui.QMainWindow):
             recfile.record(duration=5.0)
         audioAnalyzer = aa.AudioAnalyzer()
         if self._recognition:
-            voice = audioAnalyzer.checkVoice(filePath)
+            voice = audioAnalyzer.checkAudio(filePath + ".wav")
             bestUser = audioAnalyzer.getBestUser(voice)
             print "Best user: " + bestUser
+            if self._userId == bestUser:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Welcome " + bestUser + "! You have been authenticated.");
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close);
+            else:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Two step authentication failed.");
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close);
         else:
             print "Adding new user " + self._userId + " with file " + filePath
             audioAnalyzer.addUser(self._userId, filePath)
+        os.system("rm -R " + filePath + "*") #remove all temp file    
         self.close()

@@ -5,7 +5,7 @@ import RecognitionWindow as rw
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    main = rw.RecognitionWindow()
+    main = rw.RecognitionWindow(True)
     main.show()
     sys.exit(app.exec_())
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import cv2
-import os
 import sys
 import ConfigParser
 
@@ -9,29 +8,31 @@ class Recognition():
     EIGEN_MODEL = "eigen"
     FISHER_MODEL = "fisher"
     LBPH_MODEL = "lbph"
-    MAX_MATCH_ELEM = 50
+    MAX_MATCH_ELEM = 25
 
-    def __init__(self):
+    def __init__(self, recognition):
         """ Create a FaceRecognizer and train it on the given images """
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
-        modelType = self.config.get("Alg Parameters", "recognitionModel")
-        if modelType == self.EIGEN_MODEL:
-            self.model = cv2.createEigenFaceRecognizer()
-        elif modelType == self.FISHER_MODEL:
-            self.model = cv2.createFisherFaceRecognizer()
-        elif modelType == self.LBPH_MODEL:
+
+        if recognition:
+            modelType = self.config.get("Alg Parameters", "recognitionModel")
+            if modelType == self.EIGEN_MODEL:
+                self.model = cv2.createEigenFaceRecognizer()
+            elif modelType == self.FISHER_MODEL:
+                self.model = cv2.createFisherFaceRecognizer()
+            elif modelType == self.LBPH_MODEL:
+                self.model = cv2.createLBPHFaceRecognizer()
+
+            print "Inizializing face recognizer model: " + modelType + "..."
+
             self.model = cv2.createLBPHFaceRecognizer()
-
-        print "Inizializing face recognizer model: " + modelType + "..."
-
-        self.model = cv2.createLBPHFaceRecognizer()
-        self.model, self.nameList = self.trainModel(self.model)
-        self._matchList = {} # list of captured subjects or unknowns
-        self._maxMatchList = ["unknown", 0]
-        self._countMatchElem = 0
-        self._bestUsersMatch = []
-        self.frameFaceCounter = 0
+            self.model, self.nameList = self.trainModel(self.model)
+            self._matchList = {} # list of captured subjects or unknowns
+            self._maxMatchList = ["unknown", 0]
+            self._countMatchElem = 0
+            self._bestUsersMatch = []
+            self.frameFaceCounter = 0
 
     def checkFrame(self, frame):
         """ Check face in current frame """
@@ -41,7 +42,7 @@ class Recognition():
         copyFrame = cv2.cvtColor(copyFrame, cv2.COLOR_BGR2GRAY)
         # Detect face in frame
         faceImg, detection, x, y, h, w = self.detectFace(copyFrame)
-        if detection:
+        if detection and recognition:
             self.frameFaceCounter += 1
             # Crop Image
             faceImg = cv2.resize(faceImg, (92 ,112))
@@ -149,5 +150,5 @@ class Recognition():
                 self._matchList[label] = occorrenza
                 if self._maxMatchList[1] < occorrenza:
                     self._maxMatchList = [label, occorrenza]
-                    print self._maxMatchList
+                    #print self._maxMatchList
             self._countMatchElem += 1

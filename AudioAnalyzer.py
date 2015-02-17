@@ -18,17 +18,20 @@ class AudioAnalyzer():
 
     def getUserList(self):
         """ Return users of voice db """ 
-        return db.get_speakers()
+        return self._db.get_speakers()
 
     def checkAudio(self, audio):
         """ Check voices inside audio file """
-        return Voiceid(self._db, audio)
+        v = Voiceid(self._db, audio)
+        v.extract_speakers()
+        return v
 
     def getTotalSpeakers(self, voiceObj):
         """ List of all speakers in voice file """
         return voiceObj.get_user()
 
-    def getBestSpeaker(self, voiceObj):
+    def getBestUser(self, voiceObj):
         """ Best near speaker in voice file """
-        userList = getTotalSpekers(voiceObj)
+        userList = self.getTotalSpeakers(voiceObj)
+        print "UserList: " + str(userList)
         return max(userList, key = userList.get)

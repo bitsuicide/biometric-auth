@@ -9,10 +9,13 @@ class ReadWriteIndex():
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
         pathDir = os.getcwd() + self.config.get("Paths", "faceDir")
-        if not os.path.isdir(pathDir):  
+        if not os.path.exists(pathDir):  
             os.mkdir(pathDir) 
 
         indexPath = pathDir + "/" + self.config.get("Alg Parameters", "indexFile")
+        if not os.path.exists(indexPath): #TODO: more elegant solution
+            f = open(indexPath, "w") 
+            f.close()
         self.configIndex = open(indexPath, "r+")
         self.countElem = 0
         self.userImg = {} 

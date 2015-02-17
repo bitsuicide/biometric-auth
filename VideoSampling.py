@@ -42,7 +42,7 @@ class VideoSampling():
         """
         imgBasePath = ""
         imgBasePath = self.faceDir + "/" + "face_" + userId
-        recognition = rec.Recognition()
+        recognition = rec.Recognition(False)
         faceImg, detection, x, y, h, w = recognition.detectFace(cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
 
         if detection:
