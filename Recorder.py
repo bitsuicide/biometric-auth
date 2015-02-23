@@ -17,6 +17,7 @@ Non-blocking mode (start and stop recording):
 
 import pyaudio
 import wave
+from array import array
  
 class Recorder(object):
     """A recorder class for recording audio to a WAV file.
@@ -33,6 +34,8 @@ class Recorder(object):
                             self.frames_per_buffer)
  
 class RecordingFile(object):
+    THRESHOLD = 3000
+
     def __init__(self, fname, mode, channels, 
                 rate, frames_per_buffer):
         self.fname = fname
@@ -57,9 +60,17 @@ class RecordingFile(object):
                                         rate=self.rate,
                                         input=True,
                                         frames_per_buffer=self.frames_per_buffer)
+        started = False 
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
             audio = self._stream.read(self.frames_per_buffer)
+            silent = self._is_silent(audio)
+            print "Silenzio: ", silent
+            if not silent and not started:
+                started = True
+            if silent and started:
+                break
             self.wavefile.writeframes(audio)
+
         return None
  
     def start_recording(self):
@@ -94,3 +105,8 @@ class RecordingFile(object):
         wavefile.setsampwidth(self._pa.get_sample_size(pyaudio.paInt16))
         wavefile.setframerate(self.rate)
         return wavefile
+
+    def _is_silent(self, chunk):
+        as_ints = array('h', chunk)
+        print max(as_ints)
+        return max(as_ints) < self.THRESHOLD

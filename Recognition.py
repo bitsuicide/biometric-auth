@@ -107,7 +107,7 @@ class Recognition():
            
         faces = faceClassifier.detectMultiScale(img, 1.3, 5)
         if len(faces) != 0:
-            print "Detected face..."
+            #print "Detected face..."
             max = 0
             for (x, y, w, h) in faces:
                 if h > max:
