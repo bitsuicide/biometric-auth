@@ -37,7 +37,7 @@ class Recorder(object):
 
 class RecordingFile(object):
     THRESHOLD = 3000
-    MAX_SILENCE_REPEAT = 10
+    MAX_SILENT_CHUNKS_IN_A_ROW = 5
 
     def __init__(self, fname, mode, channels,
                  rate, frames_per_buffer):
@@ -69,14 +69,13 @@ class RecordingFile(object):
             audio = self._stream.read(self.frames_per_buffer)
             silent = self._is_silent(audio)
             self.wavefile.writeframes(audio)
-            print "Silence: ", silent
             if not silent:
                 if not started:
                     started = True
                 silenceNum = 0
             if silent and started:
                 silenceNum += 1
-                if silenceNum == self.MAX_SILENCE_REPEAT:
+                if silenceNum == self.MAX_SILENT_CHUNKS_IN_A_ROW:
                     break
         self.close()
         return None
