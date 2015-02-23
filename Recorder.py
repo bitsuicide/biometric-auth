@@ -35,6 +35,7 @@ class Recorder(object):
  
 class RecordingFile(object):
     THRESHOLD = 3000
+    MAX_SILENCE_REPEAT = 10
 
     def __init__(self, fname, mode, channels, 
                 rate, frames_per_buffer):
@@ -56,31 +57,36 @@ class RecordingFile(object):
     def record(self, duration):
         # Use a stream with no callback function in blocking mode
         self._stream = self._pa.open(format=pyaudio.paInt16,
-                                        channels=self.channels,
-                                        rate=self.rate,
-                                        input=True,
-                                        frames_per_buffer=self.frames_per_buffer)
+                                     channels=self.channels,
+                                     rate=self.rate,
+                                     input=True,
+                                     frames_per_buffer=self.frames_per_buffer)
         started = False 
+        silenceNum = 0
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
             audio = self._stream.read(self.frames_per_buffer)
             silent = self._is_silent(audio)
-            print "Silenzio: ", silent
-            if not silent and not started:
-                started = True
-            if silent and started:
-                break
             self.wavefile.writeframes(audio)
-
+            print "Silence: ", silent
+            if not silent:
+                if not started:
+                    started = True
+                silenceNum = 0
+            if silent and started:
+                silenceNum += 1
+                if silenceNum == self.MAX_SILENCE_REPEAT:
+                    break
+        self.close()
         return None
  
     def start_recording(self):
         # Use a stream with a callback in non-blocking mode
         self._stream = self._pa.open(format=pyaudio.paInt16,
-                                        channels=self.channels,
-                                        rate=self.rate,
-                                        input=True,
-                                        frames_per_buffer=self.frames_per_buffer,
-                                        stream_callback=self.get_callback())
+                                     channels=self.channels,
+                                     rate=self.rate,
+                                     input=True,
+                                     frames_per_buffer=self.frames_per_buffer,
+                                     stream_callback=self.get_callback())
         self._stream.start_stream()
         return self
  
@@ -108,5 +114,4 @@ class RecordingFile(object):
 
     def _is_silent(self, chunk):
         as_ints = array('h', chunk)
-        print max(as_ints)
         return max(as_ints) < self.THRESHOLD
