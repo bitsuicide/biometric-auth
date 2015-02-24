@@ -73,7 +73,7 @@ class RecognitionWindow(QtGui.QMainWindow):
             else:
                 self.close()
         else:
-            self.recWindow = rw.RecWindow(bestUser, "Authorization system - Voice", "Push recording button and read famous sentence.", True)
+            self.recWindow = rw.RecWindow(bestUser, "Authorization system - Voice", "Push Recording button and read the famous quotation.", True)
             self.close()
             self.recWindow.show()
 
