@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import cv2
-import sys
 import ConfigParser
+
 
 class Recognition():
     EIGEN_MODEL = "eigen"
@@ -29,7 +29,7 @@ class Recognition():
 
             self.model = cv2.createLBPHFaceRecognizer()
             self.model, self.nameList = self.trainModel(self.model)
-            self._matchList = {} # list of captured subjects or unknowns
+            self._matchList = {}  # list of captured subjects or unknowns
             self._maxMatchList = ["unknown", 0]
             self._countMatchElem = 0
             self._bestUsersMatch = []
@@ -41,26 +41,27 @@ class Recognition():
         copyFrame = frame.copy()
         # Convert Frame to Grey Scale
         copyFrame = cv2.cvtColor(copyFrame, cv2.COLOR_BGR2GRAY)
-        # Detect face in frame
+        # Detect face in frame
         faceImg, detection, x, y, h, w = self.detectFace(copyFrame)
         if detection and self._recognition:
             self.frameFaceCounter += 1
             # Crop Image
-            faceImg = cv2.resize(faceImg, (92 ,112))
+            faceImg = cv2.resize(faceImg, (92, 112))
             # Prediction
             [pLabel, pConfidence] = self.model.predict(np.asarray(faceImg))
             threshhold = int(self.config.get("Alg Parameters", "threshhold"))
-            if pConfidence < threshhold: # user known
+            if pConfidence < threshhold:  # user known
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 label = self.nameList[pLabel].rstrip("\n")
-                cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
+                cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX,
+                            1, (0, 255, 0))
                 self._addUserToMatchList(label)
-                #print "Known"
+                # print "Known"
                 return frame
-            else: # user unknown
+            else:  # user unknown
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 self._addUserToMatchList("unknown")
-                #print "Unknown"
+                # print "Unknown"
                 return frame
         else:
             return frame
@@ -70,22 +71,21 @@ class Recognition():
         Returns:
         A list [imgList, labelList, nameList]
         imgList: The images, which is a Python list of numpy arrays.
-        labelList: The corresponding labels (the unique number of the subject, person) in a Python list.
+        labelList: The corresponding labels
+                   (the unique number of the subject, person) in a Python list.
         nameList: Names of people
         """
-        c = 0
-        imgList, labelList, nameList = [], [], [] 
-         
+        imgList, labelList, nameList = [], [], []
+
         faces = open(path + self.config.get("Alg Parameters", "indexFile"))
         count = 0
         for line in faces:
             data = line.split(";")
             img = cv2.imread(data[0], cv2.IMREAD_GRAYSCALE)
-            imgList.append(np.asarray(img, dtype = np.uint8))
+            imgList.append(np.asarray(img, dtype=np.uint8))
             labelList.append(count)
             nameList.append(data[1])
             count = count + 1
-        total = count
         faces.close()
         return imgList, labelList, nameList
 
@@ -99,15 +99,17 @@ class Recognition():
     def detectFace(self, img):
         """ Detect face on Frame.
         Returns:
-        faceImg - image of detected face 
+        faceImg - image of detected face
         detection
-        x, y, h, w cordinate 
-        """ 
-        faceClassifier = cv2.CascadeClassifier("/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_alt.xml")
-           
+        x, y, h, w cordinate
+        """
+        faceClassifier = cv2.CascadeClassifier(
+            "/usr/local/share/OpenCV/haarcascades/"
+            "haarcascade_frontalface_alt.xml")
+
         faces = faceClassifier.detectMultiScale(img, 1.3, 5)
         if len(faces) != 0:
-            #print "Detected face..."
+            # print "Detected face..."
             max = 0
             for (x, y, w, h) in faces:
                 if h > max:
@@ -115,7 +117,7 @@ class Recognition():
                     x1 = x
                     y1 = y
                     w1 = w
-                    h1 = h        
+                    h1 = h
             y1 = int(y1 - 0.1 * h)
             x1 = int(x1 - 0.1 * w)
             h1 = int(1.2 * h1)
@@ -134,7 +136,7 @@ class Recognition():
         lenList = len(self._bestUsersMatch)
         if lenList == 0:
             return []
-        else: 
+        else:
             return self._bestUsersMatch[lenList - 1]
 
     def _addUserToMatchList(self, label):
@@ -143,13 +145,13 @@ class Recognition():
             self._matchList = {}
             self._maxMatchList = ["unknown", 0]
             self._countMatchElem = 0
-        else: 
-            if not label in self._matchList:
+        else:
+            if label not in self._matchList:
                 self._matchList[label] = 1
             else:
                 occorrenza = self._matchList[label] + 1
                 self._matchList[label] = occorrenza
                 if self._maxMatchList[1] < occorrenza:
                     self._maxMatchList = [label, occorrenza]
-                    #print self._maxMatchList
+                    # print self._maxMatchList
             self._countMatchElem += 1

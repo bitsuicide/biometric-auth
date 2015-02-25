@@ -4,10 +4,10 @@
 Add new user to auth system
 """
 
-import os
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import MainWindow as mw
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -2,6 +2,7 @@ import os
 from random import randint
 import ConfigParser
 
+
 class SentenceGenerator():
 
     def __init__(self):

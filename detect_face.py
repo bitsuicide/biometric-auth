@@ -1,7 +1,7 @@
-import os
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import RecognitionWindow as rw
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

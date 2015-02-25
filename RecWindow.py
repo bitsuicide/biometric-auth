@@ -1,9 +1,9 @@
 import AudioAnalyzer as aa
 import Recorder as rc
 import SentenceGenerator as sg
-import time
 import os
 from PyQt4 import QtGui, QtCore
+
 
 class RecWindow(QtGui.QMainWindow):
 
@@ -12,7 +12,7 @@ class RecWindow(QtGui.QMainWindow):
         self._recognition = recognition
         QtGui.QMainWindow.__init__(self)
         self.setWindowTitle(title)
-        cWidget = QtGui.QWidget(self) 
+        cWidget = QtGui.QWidget(self)
         mainLayout = QtGui.QVBoxLayout()
 
         # Title
@@ -31,9 +31,11 @@ class RecWindow(QtGui.QMainWindow):
         self.connect(startButton, QtCore.SIGNAL("clicked()"), self.startRec)
         buttonLayout.addWidget(startButton)
 
-        # Button 
+        # Button
         cancelButton = QtGui.QPushButton("Cancel")
-        self.connect(cancelButton, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))
+        self.connect(cancelButton,
+                     QtCore.SIGNAL("clicked()"),
+                     QtCore.SLOT("close()"))
         buttonLayout.addWidget(cancelButton)
 
         mainLayout.addWidget(titleLabel)
@@ -48,15 +50,17 @@ class RecWindow(QtGui.QMainWindow):
 
     def center(self):
         frameGm = self.frameGeometry()
-        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
-        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        screen = QtGui.QApplication.desktop().screenNumber(
+                QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(
+            screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
     def startRec(self):
         """ Start recording """
-        rec = rc.Recorder(rate = 22050, channels = 1)
-        filePath = "rec" 
+        rec = rc.Recorder(rate=22050, channels=1)
+        filePath = "rec"
         with rec.open(filePath + ".wav", "wb") as recfile:
             recfile.record(duration=5.0)
         audioAnalyzer = aa.AudioAnalyzer()
@@ -66,14 +70,21 @@ class RecWindow(QtGui.QMainWindow):
             print "Best user: " + bestUser
             if self._userId == bestUser:
                 msgBox = QtGui.QMessageBox()
-                msgBox.setText("Welcome " + bestUser + "! You have been authenticated.");
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close);
+                msgBox.setText(
+                    "Welcome " + bestUser + "! You have been authenticated.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
             else:
                 msgBox = QtGui.QMessageBox()
-                msgBox.setText("Two step authentication failed.");
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close);
+                msgBox.setText("Two step authentication failed.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
         else:
             print "Adding new user " + self._userId + " with file " + filePath
-            audioAnalyzer.addUser(self._userId, filePath)
-        os.system("rm -R " + filePath + "*") #remove all temp file    
+            try:
+                audioAnalyzer.addUser(self._userId, filePath)
+            except IOError, e:
+                print "Error adding user: " + str(e)
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Please speak more loudly.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+        os.system("rm -R " + filePath + "*")  # remove all temp file
         self.close()

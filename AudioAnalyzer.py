@@ -3,6 +3,7 @@ from voiceid.db import GMMVoiceDB
 import ConfigParser
 import os
 
+
 class AudioAnalyzer():
 
     def __init__(self):
@@ -14,10 +15,10 @@ class AudioAnalyzer():
 
     def addUser(self, user, audio):
         """ Add user to voice db """
-        self._db.add_model(audio, user)
+        return self._db.add_model(audio, user)
 
     def getUserList(self):
-        """ Return users of voice db """ 
+        """ Return users of voice db """
         return self._db.get_speakers()
 
     def checkAudio(self, audio):
@@ -34,4 +35,4 @@ class AudioAnalyzer():
         """ Best near speaker in voice file """
         userList = self.getTotalSpeakers(voiceObj)
         print "UserList: " + str(userList)
-        return max(userList, key = userList.get)
+        return max(userList, key=userList.get)

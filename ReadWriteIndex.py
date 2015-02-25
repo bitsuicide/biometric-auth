@@ -1,27 +1,29 @@
 import ConfigParser
-import os 
+import os
+
 
 class ReadWriteIndex():
     FILE_SEPARATOR = ";"
-    
+
     def __init__(self):
         """ Read index file """
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
         pathDir = os.getcwd() + self.config.get("Paths", "faceDir")
-        if not os.path.exists(pathDir):  
-            os.mkdir(pathDir) 
+        if not os.path.exists(pathDir):
+            os.mkdir(pathDir)
 
-        indexPath = pathDir + "/" + self.config.get("Alg Parameters", "indexFile")
-        if not os.path.exists(indexPath): #TODO: more elegant solution
-            f = open(indexPath, "w") 
+        indexPath = pathDir + "/" + self.config.get("Alg Parameters",
+                                                    "indexFile")
+        if not os.path.exists(indexPath):  # TODO: more elegant solution
+            f = open(indexPath, "w")
             f.close()
         self.configIndex = open(indexPath, "r+")
         self.countElem = 0
-        self.userImg = {} 
+        self.userImg = {}
         print "Read file index of face"
         for line in self.configIndex:
-            data = line.split(self.FILE_SEPARATOR) # img - user 
+            data = line.split(self.FILE_SEPARATOR)  # img - user
             self.addUserAndPath(data[1].strip(), data[0])
 
     def __del__(self):
@@ -30,7 +32,8 @@ class ReadWriteIndex():
 
     def addRow(self, user, path):
         """ Append row at index file """
-        self.configIndex.write(path[1:len(path)] + self.FILE_SEPARATOR + user + "\n")
+        self.configIndex.write(
+            path[1:len(path)] + self.FILE_SEPARATOR + user + "\n")
         self.addUserAndPath(user, path)
 
     def addUserAndPath(self, user, path):

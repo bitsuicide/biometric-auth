@@ -1,12 +1,13 @@
 from PyQt4 import QtGui, QtCore
 import CaptureWindow as cw
 
+
 class MainWindow(QtGui.QMainWindow):
-    
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.setWindowTitle("Add new user")
-        cWidget = QtGui.QWidget(self)        
+        cWidget = QtGui.QWidget(self)
         mainLayout = QtGui.QVBoxLayout()
 
         # Title
@@ -21,12 +22,13 @@ class MainWindow(QtGui.QMainWindow):
         userLayout.addWidget(userLabel)
         userLayout.addWidget(self.userEdit)
 
-        # Button  
+        # Button
         buttonLayout = QtGui.QHBoxLayout()
         startButton = QtGui.QPushButton("Start")
         self.connect(startButton, QtCore.SIGNAL("clicked()"), self.newWindow)
         cancelButton = QtGui.QPushButton("Cancel")
-        self.connect(cancelButton, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))
+        self.connect(
+            cancelButton, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))
         buttonLayout.addWidget(startButton)
         buttonLayout.addWidget(cancelButton)
 
@@ -40,6 +42,7 @@ class MainWindow(QtGui.QMainWindow):
     def newWindow(self):
         user = str(self.userEdit.text())
         print "Start process. Username: " + user
-        self.faceWindow = cw.CaptureWindow(user, "New User - Face", "Take a picture of you", None)
+        self.faceWindow = cw.CaptureWindow(
+            user, "New User - Face", "Take a picture of you", None)
         self.close()
         self.faceWindow.show()
