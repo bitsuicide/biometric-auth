@@ -66,11 +66,11 @@ class CaptureWindow(QtGui.QMainWindow):
         if detection:
             if not newUser:
                 msgBox = QtGui.QMessageBox()
-                msgBox.setText("User already exists and your image is "
-                               "used for improve recognition system.")
-                msgBox.setInformativeText("Do you want to record your "
-                                          "voice one more time? Your "
-                                          "voice is always overwritten.")
+                msgBox.setText("User already exists and your image is used "
+                               "for improving recognition system.")
+                msgBox.setInformativeText(
+                    "Do you want to record your voice one more time?"
+                    " Your voice will always be overwritten.")
                 msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
                                           QtGui.QMessageBox.Close)
                 msgBox.setDefaultButton(QtGui.QMessageBox.Close)
@@ -79,7 +79,7 @@ class CaptureWindow(QtGui.QMainWindow):
                 self.recWindow = rw.RecWindow(
                     self.userId,
                     "New User - Voice",
-                    "Push recording button and read famous sentence.",
+                    "Push Recording button and read the famous quotation.",
                     False)
                 time.sleep(self.WAIT_TIME)
                 self.close()
@@ -91,7 +91,7 @@ class CaptureWindow(QtGui.QMainWindow):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("There is a problem with your photo!")
             msgBox.setInformativeText(
-                "Try to choose a different position of your face.")
+                "Try to assume a different position of your face.")
             msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
                                       QtGui.QMessageBox.Close)
             msgBox.setDefaultButton(QtGui.QMessageBox.Ok)
