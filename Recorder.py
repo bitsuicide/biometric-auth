@@ -37,7 +37,7 @@ class Recorder(object):
 
 class RecordingFile(object):
     THRESHOLD = 3000
-    MAX_SILENT_CHUNKS_IN_A_ROW = 5
+    MAX_SILENT_CHUNKS_IN_A_ROW = 15
 
     def __init__(self, fname, mode, channels,
                  rate, frames_per_buffer):
@@ -76,6 +76,7 @@ class RecordingFile(object):
             if silent and started:
                 silenceNum += 1
                 if silenceNum == self.MAX_SILENT_CHUNKS_IN_A_ROW:
+                    print "User stop talking"
                     break
         self.close()
         return None
