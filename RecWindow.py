@@ -73,18 +73,24 @@ class RecWindow(QtGui.QMainWindow):
                 msgBox.setText(
                     "Welcome " + bestUser + "! You have been authenticated.")
                 msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                msgBox.exec_()
             else:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Two step authentication failed.")
                 msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                msgBox.exec_()
         else:
             print "Adding new user " + self._userId + " with file " + filePath
             try:
-                audioAnalyzer.addUser(self._userId, filePath)
+                success = audioAnalyzer.addUser(self._userId, filePath)
             except IOError, e:
+                success = False
                 print "Error adding user: " + str(e)
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText("Please speak more loudly.")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-        os.system("rm -R " + filePath + "*")  # remove all temp file
-        self.close()
+            os.system("rm -R " + filePath + "*")  # remove all temp file
+            if success:
+                self.close()
+                return
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Please speak more loudly.")
+            msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+            msgBox.exec_()
