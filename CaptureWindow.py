@@ -6,25 +6,36 @@ import time
 
 class CaptureWindow(QtGui.QMainWindow):
     WAIT_TIME = 1
+    MIN_PHOTOS = 3
+    TITLE = "Take a picture of yourself"
 
-    def __init__(self, userId, title, description, cam):
-        self.userId = userId
+    def __init__(self, user_id, is_registered):
+        self.photos_taken = 0
+        self.user_id = user_id
+        self.is_registered = is_registered
+        self._save_picture = {
+            False: self._save_picture_new_user,
+            True: self._save_picture_registered_user
+        }
+
         QtGui.QMainWindow.__init__(self)
-        self.setWindowTitle(title)
+        self.setWindowTitle("{} - Face Capture".format(user_id))
         cWidget = QtGui.QWidget(self)
         mainLayout = QtGui.QVBoxLayout()
 
         # Title
-        titleLabel = QtGui.QLabel(description)
-        titleLabel.setAlignment(QtCore.Qt.AlignCenter)
-
+        title = self.TITLE
+        if not is_registered:
+            title += " ({}/{})".format(self.photos_taken+1, self.MIN_PHOTOS)
+        self.titleLabel = QtGui.QLabel(title)
+        self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         # Webcam
         self.imgLabel = QtGui.QLabel()
-        self.webcamSampling = None
-        if cam is None:
-            self.webcamSampling = vs.VideoSampling()
-        else:
-            self.webcamSampling = cam
+        self.webcamSampling = vs.VideoSampling()
+        # if cam is None:
+        #     self.webcamSampling = vs.VideoSampling()
+        # else:
+        #     self.webcamSampling = cam
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refreshWebcam)
         self.timer.start(27)
@@ -33,7 +44,8 @@ class CaptureWindow(QtGui.QMainWindow):
         # Button
         buttonLayout = QtGui.QHBoxLayout()
         startButton = QtGui.QPushButton("Take!")
-        self.connect(startButton, QtCore.SIGNAL("clicked()"), self.savePicture)
+        self.connect(
+            startButton, QtCore.SIGNAL("clicked()"), self.save_picture)
         buttonLayout.addWidget(startButton)
         cancelButton = QtGui.QPushButton("Cancel")
         self.connect(cancelButton,
@@ -41,7 +53,7 @@ class CaptureWindow(QtGui.QMainWindow):
                      QtCore.SLOT("close()"))
         buttonLayout.addWidget(cancelButton)
 
-        mainLayout.addWidget(titleLabel)
+        mainLayout.addWidget(self.titleLabel)
         mainLayout.addWidget(self.imgLabel)
         mainLayout.addLayout(buttonLayout)
 
@@ -59,33 +71,56 @@ class CaptureWindow(QtGui.QMainWindow):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def savePicture(self):
-        print "Save picture"
+    def _save_picture_registered_user(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setInformativeText(
+            "User already exists and your image is used for improve "
+            "recognition system. Do you want to take another shot?")
+        msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
+                                  QtGui.QMessageBox.Close)
+        msgBox.setDefaultButton(QtGui.QMessageBox.Close)
+        ret = msgBox.exec_()
+        if ret == QtGui.QMessageBox.Ok:
+            self.timer.start(27)
+            return True
+
+        msgBox.setInformativeText(
+            "Do you want to record your voice one more time?"
+            " Your voice will always be overwritten.")
+        msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
+                                  QtGui.QMessageBox.Close)
+        msgBox.setDefaultButton(QtGui.QMessageBox.Close)
+        ret = msgBox.exec_()
+        if ret == QtGui.QMessageBox.Close:
+            self.close()
+            return True
+        return False
+
+    def _save_picture_new_user(self):
+        if self.photos_taken < self.MIN_PHOTOS:
+            print self.photos_taken, self.MIN_PHOTOS
+            self.titleLabel.setText(self.TITLE + " ({}/{})".format(
+                self.photos_taken+1, self.MIN_PHOTOS))
+            self.timer.start(27)
+            return True
+        return False
+
+    def save_picture(self):
+        print "Saving picture"
         self.timer.stop()
-        detection, newUser = self.webcamSampling.saveFrame(self.userId)
+        detection, _ = self.webcamSampling.saveFrame(self.user_id)
         if detection:
-            if not newUser:
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText("User already exists and your image is used "
-                               "for improving recognition system.")
-                msgBox.setInformativeText(
-                    "Do you want to record your voice one more time?"
-                    " Your voice will always be overwritten.")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
-                                          QtGui.QMessageBox.Close)
-                msgBox.setDefaultButton(QtGui.QMessageBox.Close)
-                ret = msgBox.exec_()
-            if newUser or ret == QtGui.QMessageBox.Ok:
-                self.recWindow = rw.RecWindow(
-                    self.userId,
-                    "New User - Voice",
-                    "Push Recording button and read the famous quotation.",
-                    False)
-                time.sleep(self.WAIT_TIME)
-                self.close()
-                self.recWindow.show()
-            else:
-                self.close()
+            self.photos_taken += 1
+            if self._save_picture[self.is_registered]():
+                return
+            self.recWindow = rw.RecWindow(
+                self.user_id,
+                "New User - Voice",
+                "Push Recording button and read the famous quotation.",
+                False)
+            time.sleep(self.WAIT_TIME)
+            self.close()
+            self.recWindow.show()
         else:
             print "Procedure aborted."
             msgBox = QtGui.QMessageBox()

@@ -1,5 +1,6 @@
 from PyQt4 import QtGui, QtCore
 import CaptureWindow as cw
+import ReadWriteIndex as rw
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -42,7 +43,10 @@ class MainWindow(QtGui.QMainWindow):
     def newWindow(self):
         user = str(self.userEdit.text())
         print "Start process. Username: " + user
-        self.faceWindow = cw.CaptureWindow(
-            user, "New User - Face", "Take a picture of you", None)
+        is_registered = rw.ReadWriteIndex().checkUser(user)
+        print "Registered user: " + str(is_registered)
+        self.faceWindow = cw.CaptureWindow(user, is_registered)
+        # self.faceWindow = cw.CaptureWindow(
+        #     user, "New User - Face", "Take a picture of yourself", None)
         self.close()
         self.faceWindow.show()
