@@ -49,8 +49,8 @@ class Recognition():
             faceImg = cv2.resize(faceImg, (92, 112))
             # Prediction
             [pLabel, pConfidence] = self.model.predict(np.asarray(faceImg))
-            threshhold = int(self.config.get("Alg Parameters", "threshhold"))
-            if pConfidence < threshhold:  # user known
+            threshold = int(self.config.get("Alg Parameters", "threshold"))
+            if pConfidence < threshold:  # user known
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 label = self.nameList[pLabel].rstrip("\n")
                 cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX,
@@ -58,7 +58,7 @@ class Recognition():
                 self._addUserToMatchList(label)
                 # print "Known"
                 return frame
-            else:  # user unknown
+            else:  # unknown user
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 self._addUserToMatchList("unknown")
                 # print "Unknown"
