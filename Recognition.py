@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import math
 import numpy as np
 import cv2
 import ConfigParser
+from PIL import Image
 
 
 class Recognition():
@@ -155,3 +157,89 @@ class Recognition():
                     self._maxMatchList = [label, occorrenza]
                     # print self._maxMatchList
             self._countMatchElem += 1
+
+    def distance(self, p1, p2):
+        dx = p2[0] - p1[0]
+        dy = p2[1] - p1[1]
+        return math.sqrt(dx * dx + dy * dy)
+
+    def scaleRotateTranslate(self, image, angle, center=None, new_center=None,
+                             scale=None, resample=Image.BICUBIC):
+        if (scale is None) and (center is None):
+            return image.rotate(angle=angle, resample=resample)
+        nx, ny = x, y = center
+        sx = sy = 1.0
+        if new_center:
+            (nx, ny) = new_center
+        if scale:
+            (sx, sy) = (scale, scale)
+        cosine = math.cos(angle)
+        sine = math.sin(angle)
+        a = cosine / sx
+        b = sine / sx
+        c = x - nx * a - ny * b
+        d = -sine / sy
+        e = cosine / sy
+        f = y - nx * d - ny * e
+        return image.transform(
+            image.size, Image.AFFINE, (a, b, c, d, e, f), resample=resample)
+
+    def cropFace(self, image, eye_left=(0, 0), eye_right=(0, 0),
+                 offset_pct=(0.25, 0.25), dest_sz=(200, 200)):
+        # calculate offsets in original image
+        offset_h = math.floor(float(offset_pct[0]) * dest_sz[0])
+        offset_v = math.floor(float(offset_pct[1]) * dest_sz[1])
+        # get the direction
+        eye_direction = (
+            eye_right[0] - eye_left[0], eye_right[1] - eye_left[1])
+        # calc rotation angle in radians
+        rotation = -math.atan2(
+            float(eye_direction[1]), float(eye_direction[0]))
+        # distance between them
+        dist = self.distance(eye_left, eye_right)
+        # calculate the reference eye-width
+        reference = dest_sz[0] - 2.0 * offset_h
+        # scale factor
+        scale = float(dist) / float(reference)
+        # rotate original around the left eye
+        image = self.scaleRotateTranslate(
+            image, center=eye_left, angle=rotation)
+        # crop the rotated image
+        crop_xy = (
+            eye_left[0] - scale * offset_h, eye_left[1] - scale * offset_v)
+        crop_size = (dest_sz[0] * scale, dest_sz[1] * scale)
+        image = image.crop((int(crop_xy[0]), int(crop_xy[1]), int(
+            crop_xy[0] + crop_size[0]), int(crop_xy[1] + crop_size[1])))
+        # resize it
+        # image = image.resize(dest_sz, Image.ANTIALIAS)
+        return np.array(image)
+
+    # def positionEyes(self, pathImage):
+    #     imcolor = cv2.cv.LoadImage(pathImage)  # input image
+    #     loading the classifiers
+    def positionEyes(self, image):
+        haarEyes = cv2.cv.Load(
+            '/usr/local/share/OpenCV/haarcascades/haarcascade_eye.xml')
+        # running the classifiers
+        storage = cv2.cv.CreateMemStorage()
+
+        detectedEyes = cv2.cv.HaarDetectObjects(
+            image, haarEyes, storage, 1.3, 3)
+        eyes = []
+
+        # draw a purple rectangle where the eye is detected
+        if detectedEyes:
+            for face in detectedEyes:
+                p1 = face[0][0], face[0][1]
+                p2 = face[0][0] + face[0][2], face[0][1] + face[0][3]
+                eye_x = (p2[0] - p1[0]) / 2 + p1[0]
+                eye_y = (p2[1] - p1[1]) / 2 + p1[1]
+                eyes.append((eye_x, eye_y))
+
+        return eyes
+
+    def getCroppedImageByEyes(self, image):
+        eye = self.positionEyes(cv2.cv.fromarray(image))
+        if len(eye) >= 2:
+            return self.cropFace(Image.fromarray(image), eye[0], eye[1]), True
+        return None, False

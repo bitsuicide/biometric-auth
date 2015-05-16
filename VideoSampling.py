@@ -44,7 +44,11 @@ class VideoSampling():
         imgBasePath = ""
         imgBasePath = self.faceDir + "/" + "face_" + userId
         recognition = rec.Recognition(False)
-        faceImg, detection, x, y, h, w = recognition.detectFace(
+        # faceImg, detection, x, y, h, w = recognition.detectFace(
+        #     cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
+        # faceImg2, detection2 = recognition.getCroppedImageByEyes(
+        #     cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY), (0.2, 0.2))
+        faceImg, detection = recognition.getCroppedImageByEyes(
             cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
 
         if detection:
@@ -57,5 +61,5 @@ class VideoSampling():
             newUser = writer.checkUser(userId)
             writer.addRow(userId, filePath)  # add new line to file index
             return detection, not newUser
-        else:
-            return detection, 0
+
+        return detection, 0

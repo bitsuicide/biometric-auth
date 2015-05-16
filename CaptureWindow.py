@@ -98,7 +98,6 @@ class CaptureWindow(QtGui.QMainWindow):
 
     def _save_picture_new_user(self):
         if self.photos_taken < self.MIN_PHOTOS:
-            print self.photos_taken, self.MIN_PHOTOS
             self.titleLabel.setText(self.TITLE + " ({}/{})".format(
                 self.photos_taken+1, self.MIN_PHOTOS))
             self.timer.start(27)
