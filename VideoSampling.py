@@ -48,7 +48,8 @@ class VideoSampling():
         #     cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
         # faceImg2, detection2 = recognition.getCroppedImageByEyes(
         #     cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY), (0.2, 0.2))
-        faceImg, detection = recognition.getCroppedImageByEyes(
+        #faceImg, detection = recognition.getCroppedImageByEyes(
+        faceImg, detection, x, y, h, w = recognition.detectFace(
             cv2.cvtColor(self.currentFrame, cv2.COLOR_RGB2GRAY))
 
         if detection:

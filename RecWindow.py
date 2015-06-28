@@ -68,6 +68,7 @@ class RecWindow(QtGui.QMainWindow):
             voice = audioAnalyzer.checkAudio(filePath + ".wav")
             bestUser = audioAnalyzer.getBestUser(voice)
             print "Best user: " + bestUser
+            print "_userId: " + self._userId
             if self._userId == bestUser:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText(

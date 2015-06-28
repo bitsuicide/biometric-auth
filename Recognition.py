@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import Counter
 import math
 import numpy as np
 import cv2
@@ -10,7 +11,7 @@ class Recognition():
     EIGEN_MODEL = "eigen"
     FISHER_MODEL = "fisher"
     LBPH_MODEL = "lbph"
-    MAX_MATCH_ELEM = 25
+    MAX_MATCH_ELEM = 10
 
     def __init__(self, recognition):
         """ Create a FaceRecognizer and train it on the given images """
@@ -31,10 +32,9 @@ class Recognition():
 
             self.model = cv2.createLBPHFaceRecognizer()
             self.model, self.nameList = self.trainModel(self.model)
-            self._matchList = {}  # list of captured subjects or unknowns
-            self._maxMatchList = ["unknown", 0]
+            self._matchCounter = Counter()  # captured subjects or unknowns
+            self._bestUsersMatch = Counter()
             self._countMatchElem = 0
-            self._bestUsersMatch = []
             self.frameFaceCounter = 0
 
     def checkFrame(self, frame):
@@ -52,21 +52,18 @@ class Recognition():
             # Prediction
             [pLabel, pConfidence] = self.model.predict(np.asarray(faceImg))
             threshold = int(self.config.get("Alg Parameters", "threshold"))
-            if pConfidence < threshold:  # user known
+            if pConfidence < threshold:  # known user
+                print "Known user"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 label = self.nameList[pLabel].rstrip("\n")
                 cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX,
                             1, (0, 255, 0))
                 self._addUserToMatchList(label)
-                # print "Known"
-                return frame
             else:  # unknown user
+                print "Unknown user"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 self._addUserToMatchList("unknown")
-                # print "Unknown"
-                return frame
-        else:
-            return frame
+        return frame
 
     def readImages(self, path):
         """ Reads the images in a given folder.
@@ -109,21 +106,21 @@ class Recognition():
             "/usr/local/share/OpenCV/haarcascades/"
             "haarcascade_frontalface_alt.xml")
 
-        faces = faceClassifier.detectMultiScale(img, 1.3, 5)
+        faces = faceClassifier.detectMultiScale(img, 1.05, 0)
         if len(faces) != 0:
             # print "Detected face..."
-            max = 0
+            max_height = 0
             for (x, y, w, h) in faces:
-                if h > max:
-                    max = h
+                if h > max_height:
+                    max_height = h
                     x1 = x
                     y1 = y
                     w1 = w
                     h1 = h
-            y1 = int(y1 - 0.1 * h)
-            x1 = int(x1 - 0.1 * w)
-            h1 = int(1.2 * h1)
-            w1 = int(1.2 * w1)
+            y1 = int(y1)
+            x1 = int(x1 + 0.10 * w)
+            h1 = int(h1)
+            w1 = int(w1 * 0.80)
             faceImg = img[y1:y1+h1, x1:x1+w1]
             if y1 < 0 or x1 < 0:
                 return [0, 0, 0, 0, 0, 0]
@@ -134,28 +131,18 @@ class Recognition():
             return [0, 0, 0, 0, 0, 0]
 
     def getBestUser(self):
-        """ Return best user matching """
-        lenList = len(self._bestUsersMatch)
-        if lenList == 0:
-            return []
-        else:
-            return self._bestUsersMatch[lenList - 1]
+        """ Return best user matching or None if empty """
+        if self._bestUsersMatch:
+            return max(self._bestUsersMatch, key=self._bestUsersMatch.get)
 
     def _addUserToMatchList(self, label):
         if self._countMatchElem == self.MAX_MATCH_ELEM:
-            self._bestUsersMatch.append(self._maxMatchList[0])
-            self._matchList = {}
-            self._maxMatchList = ["unknown", 0]
+            most_common = max(self._matchCounter, key=self._matchCounter.get)
+            self._bestUsersMatch[most_common] += 1
+            self._matchCounter.clear()
             self._countMatchElem = 0
         else:
-            if label not in self._matchList:
-                self._matchList[label] = 1
-            else:
-                occorrenza = self._matchList[label] + 1
-                self._matchList[label] = occorrenza
-                if self._maxMatchList[1] < occorrenza:
-                    self._maxMatchList = [label, occorrenza]
-                    # print self._maxMatchList
+            self._matchCounter[label] += 1
             self._countMatchElem += 1
 
     def distance(self, p1, p2):
@@ -185,7 +172,7 @@ class Recognition():
             image.size, Image.AFFINE, (a, b, c, d, e, f), resample=resample)
 
     def cropFace(self, image, eye_left=(0, 0), eye_right=(0, 0),
-                 offset_pct=(0.25, 0.25), dest_sz=(200, 200)):
+                 offset_pct=(0.25, 0.25), dest_sz=(92, 112)):
         # calculate offsets in original image
         offset_h = math.floor(float(offset_pct[0]) * dest_sz[0])
         offset_v = math.floor(float(offset_pct[1]) * dest_sz[1])

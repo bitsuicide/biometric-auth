@@ -66,10 +66,17 @@ class RecognitionWindow(QtGui.QMainWindow):
 
     def authenticate(self):
         self.timer.stop()
-        bestUser = str(self.recognition.getBestUser())
-        print ("Best user: " + bestUser + " Frame Count: "
+        bestUser = self.recognition.getBestUser()
+        print ("Best user: " + str(bestUser) + " Frame Count: "
                + str(self.recognition.frameFaceCounter))
-        if bestUser == "unknown":
+        if bestUser is None:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Please wait a few seconds.")
+            msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgBox.setDefaultButton(QtGui.QMessageBox.Ok)
+            msgBox.exec_()
+            self.timer.start(27)
+        elif bestUser == 'unknown':
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Unknown user. Try to authenticate yourself.")
             msgBox.setStandardButtons(QtGui.QMessageBox.Ok |
