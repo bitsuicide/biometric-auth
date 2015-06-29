@@ -106,7 +106,7 @@ class Recognition():
             "/usr/local/share/OpenCV/haarcascades/"
             "haarcascade_frontalface_alt.xml")
 
-        faces = faceClassifier.detectMultiScale(img, 1.05, 0)
+        faces = faceClassifier.detectMultiScale(img, 1.3, 4)
         if len(faces) != 0:
             # print "Detected face..."
             max_height = 0

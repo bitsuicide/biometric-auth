@@ -1,7 +1,5 @@
 .DS_Store
 *.pyc
-face/
 gesture/
 pradeep_collection/
 crop_faces.py
-voice/
