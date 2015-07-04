@@ -14,29 +14,26 @@ class RecognitionWindow(QtGui.QMainWindow):
         mainLayout = QtGui.QVBoxLayout()
 
         # Title
-        titleLabel = QtGui.QLabel("Show your credential!")
-        titleLabel.setAlignment(QtCore.Qt.AlignCenter)
+        # titleLabel = QtGui.QLabel("Show your credential!")
+        # titleLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         # Webcam
         self.imgLabel = QtGui.QLabel()
         self.webcamSampling = vs.VideoSampling()
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.refreshWebcam)
-        self.timer.start(27)
         self.update()
 
         # Button
-        startButton = QtGui.QPushButton("Authenticate")
-        cancelButton = QtGui.QPushButton("Cancel")
-        self.connect(
-            startButton, QtCore.SIGNAL("clicked()"), self.startAuthentication)
-        self.connect(
-            cancelButton, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))
+        self.startButton = QtGui.QPushButton("Authenticate")
+        self.cancelButton = QtGui.QPushButton("Cancel")
+        self.connect(self.startButton, QtCore.SIGNAL("clicked()"),
+                     self.startAuthentication)
+        self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
+                     QtCore.SLOT("close()"))
 
-        mainLayout.addWidget(titleLabel)
+        # mainLayout.addWidget(titleLabel)
         mainLayout.addWidget(self.imgLabel)
-        mainLayout.addWidget(startButton)
-        mainLayout.addWidget(cancelButton)
+        mainLayout.addWidget(self.startButton)
+        mainLayout.addWidget(self.cancelButton)
 
         mainLayout.setAlignment(QtCore.Qt.AlignCenter)
         cWidget.setLayout(mainLayout)
@@ -58,14 +55,19 @@ class RecognitionWindow(QtGui.QMainWindow):
         self.webcamSampling.currentFrame = self.recognition.checkFrame(
             self.webcamSampling.currentFrame)
         self.imgLabel.setPixmap(self.webcamSampling.convertFrame())
+        if self.recognition._totalMatches == self.recognition.TOTAL_MATCHES:
+            self.timer.stop()
+            self.authenticate()
 
     def startAuthentication(self):
         print "Start face authentication..."
-        self._authTimer = QtCore.QTimer(self)
-        self._authTimer.singleShot(3000, self.authenticate)
+        self.startButton.setEnabled(False)
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.refreshWebcam)
+        self.timer.start(33)
 
     def authenticate(self):
-        self.timer.stop()
         bestUser = self.recognition.getBestUser()
         print ("Best user: " + str(bestUser) + " Frame Count: "
                + str(self.recognition.frameFaceCounter))
@@ -75,7 +77,8 @@ class RecognitionWindow(QtGui.QMainWindow):
             msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
             msgBox.setDefaultButton(QtGui.QMessageBox.Ok)
             msgBox.exec_()
-            self.timer.start(27)
+            self.timer.start(33)
+            self.startButton.setEnabled(True)
         elif bestUser == 'unknown':
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Unknown user. Try to authenticate yourself.")
@@ -83,7 +86,8 @@ class RecognitionWindow(QtGui.QMainWindow):
                                       QtGui.QMessageBox.Cancel)
             msgBox.setDefaultButton(QtGui.QMessageBox.Ok)
             if msgBox.exec_() == QtGui.QMessageBox.Ok:
-                self.timer.start(27)
+                self.timer.start(33)
+                self.startButton.setEnabled(True)
             else:
                 self.close()
         else:

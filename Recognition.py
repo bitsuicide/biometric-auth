@@ -11,6 +11,7 @@ class Recognition():
     EIGEN_MODEL = "eigen"
     FISHER_MODEL = "fisher"
     LBPH_MODEL = "lbph"
+    TOTAL_MATCHES = 5
     MAX_MATCH_ELEM = 10
 
     def __init__(self, recognition):
@@ -34,6 +35,7 @@ class Recognition():
             self.model, self.nameList = self.trainModel(self.model)
             self._matchCounter = Counter()  # captured subjects or unknowns
             self._bestUsersMatch = Counter()
+            self._totalMatches = 0
             self._countMatchElem = 0
             self.frameFaceCounter = 0
 
@@ -138,9 +140,11 @@ class Recognition():
     def _addUserToMatchList(self, label):
         if self._countMatchElem == self.MAX_MATCH_ELEM:
             most_common = max(self._matchCounter, key=self._matchCounter.get)
+            self._totalMatches += 1
             self._bestUsersMatch[most_common] += 1
             self._matchCounter.clear()
             self._countMatchElem = 0
+
         else:
             self._matchCounter[label] += 1
             self._countMatchElem += 1

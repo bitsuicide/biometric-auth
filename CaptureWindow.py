@@ -6,7 +6,7 @@ import time
 
 class CaptureWindow(QtGui.QMainWindow):
     WAIT_TIME = 1
-    MIN_PHOTOS = 3
+    MIN_PHOTOS = 5
     TITLE = "Take a picture of yourself"
 
     def __init__(self, user_id, is_registered):
@@ -38,7 +38,7 @@ class CaptureWindow(QtGui.QMainWindow):
         #     self.webcamSampling = cam
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refreshWebcam)
-        self.timer.start(27)
+        self.timer.start(33)
         self.update()
 
         # Button
@@ -81,7 +81,7 @@ class CaptureWindow(QtGui.QMainWindow):
         msgBox.setDefaultButton(QtGui.QMessageBox.Close)
         ret = msgBox.exec_()
         if ret == QtGui.QMessageBox.Ok:
-            self.timer.start(27)
+            self.timer.start(33)
             return True
 
         msgBox.setInformativeText(
@@ -100,7 +100,7 @@ class CaptureWindow(QtGui.QMainWindow):
         if self.photos_taken < self.MIN_PHOTOS:
             self.titleLabel.setText(self.TITLE + " ({}/{})".format(
                 self.photos_taken+1, self.MIN_PHOTOS))
-            self.timer.start(27)
+            self.timer.start(33)
             return True
         return False
 
@@ -130,7 +130,7 @@ class CaptureWindow(QtGui.QMainWindow):
                                       QtGui.QMessageBox.Close)
             msgBox.setDefaultButton(QtGui.QMessageBox.Ok)
             if msgBox.exec_() == QtGui.QMessageBox.Ok:
-                self.timer.start(27)
+                self.timer.start(33)
             else:
                 self.close()
 
