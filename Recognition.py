@@ -14,14 +14,20 @@ class Recognition():
     TOTAL_MATCHES = 5
     MAX_MATCH_ELEM = 10
 
-    def __init__(self, recognition):
+    def __init__(self, recognition, modelType=None, threshold=None):
         """ Create a FaceRecognizer and train it on the given images """
         self._recognition = recognition
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
-
+        if threshold is None:
+            self.threshold = int(self.config.get("Alg Parameters",
+                                                 "threshold"))
+        else:
+            self.threshold = threshold
         if self._recognition:
-            modelType = self.config.get("Alg Parameters", "recognitionModel")
+            if modelType is None:
+                modelType = self.config.get("Alg Parameters",
+                                            "recognitionModel")
             if modelType == self.EIGEN_MODEL:
                 self.model = cv2.createEigenFaceRecognizer()
             elif modelType == self.FISHER_MODEL:
@@ -53,16 +59,15 @@ class Recognition():
             faceImg = cv2.resize(faceImg, (92, 112))
             # Prediction
             [pLabel, pConfidence] = self.model.predict(np.asarray(faceImg))
-            threshold = int(self.config.get("Alg Parameters", "threshold"))
-            if pConfidence < threshold:  # known user
-                print "Known user"
+            if pConfidence < self.threshold:  # known user
+                # print "Known user"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 label = self.nameList[pLabel].rstrip("\n")
                 cv2.putText(frame, label, (x, y), cv2.FONT_HERSHEY_COMPLEX,
                             1, (0, 255, 0))
                 self._addUserToMatchList(label)
             else:  # unknown user
-                print "Unknown user"
+                # print "Unknown user"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 self._addUserToMatchList("unknown")
         return frame

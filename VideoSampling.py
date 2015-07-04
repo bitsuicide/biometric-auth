@@ -12,14 +12,17 @@ import ReadWriteIndex as rwi
 
 class VideoSampling():
 
-    def __init__(self):
+    def __init__(self, video_src=None):
         self.config = ConfigParser.ConfigParser()
         self.config.read("config.ini")
-        self.capture = cv2.VideoCapture(int(self.config.get("Cam", "id")))
-        self.capture.set(3, float(self.config.get("Cam", "heigth")))
-        self.capture.set(4, float(self.config.get("Cam", "weigth")))
         self.currentDir = os.getcwd()
         self.faceDir = self.config.get("Paths", "faceDir")
+        if video_src is not None:
+            self.capture = cv2.VideoCapture(video_src)
+        else:
+            self.capture = cv2.VideoCapture(int(self.config.get("Cam", "id")))
+            self.capture.set(3, float(self.config.get("Cam", "heigth")))
+            self.capture.set(4, float(self.config.get("Cam", "weigth")))
 
     def captureNextFrame(self):
         """ capture frame and reverse RBG BGR and return opencv image """

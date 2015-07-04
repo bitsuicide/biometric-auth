@@ -6,9 +6,9 @@ import RecWindow as rw
 
 class RecognitionWindow(QtGui.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, video_src=None, modelType=None, threshold=None):
         QtGui.QMainWindow.__init__(self)
-        self.recognition = rec.Recognition(True)
+        self.recognition = rec.Recognition(True, modelType, threshold)
         self.setWindowTitle("Authorization system - Face")
         cWidget = QtGui.QWidget(self)
         mainLayout = QtGui.QVBoxLayout()
@@ -19,7 +19,7 @@ class RecognitionWindow(QtGui.QMainWindow):
 
         # Webcam
         self.imgLabel = QtGui.QLabel()
-        self.webcamSampling = vs.VideoSampling()
+        self.webcamSampling = vs.VideoSampling(video_src)
         self.update()
 
         # Button
