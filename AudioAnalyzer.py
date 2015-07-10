@@ -24,7 +24,7 @@ class AudioAnalyzer():
     def checkAudio(self, audio):
         """ Check voices inside audio file """
         v = Voiceid(self._db, audio)
-        v.extract_speakers()
+        v.extract_speakers(quiet=True)
         return v
 
     def getTotalSpeakers(self, voiceObj):
@@ -36,3 +36,11 @@ class AudioAnalyzer():
         userList = self.getTotalSpeakers(voiceObj)
         print "UserList: " + str(userList)
         return max(userList, key=userList.get)
+
+    def getBestUsers(self, voiceObj):
+        """ Best three near speakers in voice file """
+        userList = self.getTotalSpeakers(voiceObj)
+        print "UserList: " + str(userList)
+        if 'S0' in userList:
+            del userList['S0']
+        return sorted(userList, key=userList.get)[-3:]

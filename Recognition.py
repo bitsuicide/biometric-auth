@@ -11,8 +11,8 @@ class Recognition():
     EIGEN_MODEL = "eigen"
     FISHER_MODEL = "fisher"
     LBPH_MODEL = "lbph"
-    TOTAL_MATCHES = 5
-    MAX_MATCH_ELEM = 10
+    TOTAL_MATCHES = 3
+    MAX_MATCH_ELEM = 9
 
     def __init__(self, recognition, modelType=None, threshold=None):
         """ Create a FaceRecognizer and train it on the given images """
@@ -37,7 +37,6 @@ class Recognition():
 
             print "Inizializing face recognizer model: " + modelType + "..."
 
-            self.model = cv2.createLBPHFaceRecognizer()
             self.model, self.nameList = self.trainModel(self.model)
             self._matchCounter = Counter()  # captured subjects or unknowns
             self._bestUsersMatch = Counter()
@@ -125,7 +124,7 @@ class Recognition():
                     w1 = w
                     h1 = h
             y1 = int(y1)
-            x1 = int(x1 + 0.10 * w)
+            x1 = int(x1 + 0.20 * w)
             h1 = int(h1)
             w1 = int(w1 * 0.80)
             faceImg = img[y1:y1+h1, x1:x1+w1]

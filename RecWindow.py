@@ -66,13 +66,14 @@ class RecWindow(QtGui.QMainWindow):
         audioAnalyzer = aa.AudioAnalyzer()
         if self._recognition:
             voice = audioAnalyzer.checkAudio(filePath + ".wav")
-            bestUser = audioAnalyzer.getBestUser(voice)
-            print "Best user: " + bestUser
+            bestUsers = audioAnalyzer.getBestUsers(voice)
+            print "Best users: {}".format(bestUsers)
             print "_userId: " + self._userId
-            if self._userId == bestUser:
+            if self._userId in bestUsers:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText(
-                    "Welcome " + bestUser + "! You have been authenticated.")
+                    "Welcome {}! You have been authenticated.".format(
+                        self._userId))
                 msgBox.setStandardButtons(QtGui.QMessageBox.Close)
                 msgBox.exec_()
             else:
