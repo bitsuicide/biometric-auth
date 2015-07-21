@@ -81,7 +81,6 @@ class Recognition():
         nameList: Names of people
         """
         imgList, labelList, nameList = [], [], []
-
         faces = open(path + self.config.get("Alg Parameters", "indexFile"))
         count = 0
         for line in faces:
